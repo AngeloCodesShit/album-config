@@ -1,0 +1,5 @@
+{
+  "name": "Studio Album Configurator",
+  "description": "A professional pricing tool for photography studio albums, calculating costs and client pricing based on configurable options.",
+  "requestFramePermissions": []
+}
