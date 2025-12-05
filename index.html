@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -15,16 +16,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Animazioni semplici */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
     </style>
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "react": "https://aistudiocdn.com/react@^19.2.1",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "vite": "https://aistudiocdn.com/vite@^7.2.6",
     "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
   }
@@ -33,24 +34,22 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
     
-    <!-- Contenitore Radice React -->
     <div id="root"></div>
 
-    <!-- 2. CODICE APPLICAZIONE -->
     <script type="text/babel">
         
         /********************************************************************************
-         *  DATI E CONFIGURAZIONE (Copia di data.ts)
+         *  DATI E CONFIGURAZIONE
          ********************************************************************************/
         const PRICE_MULTIPLIER = 1.5;
         const COST_PER_ADDITIONAL_SPREAD = 7.92;
         const STANDARD_SPREADS = 30;
         const INCLUDED_MINIS = 2;
-        const EXTRA_MINI_BASE_COST = 0;
+        const EXTRA_MINI_BASE_COST = 50.00; // Aggiornato a 50€
 
         // --- EXTRAS ---
         const EXTRAS = [
-            { id: 'led', name: 'Supplemento LED', cost: 40.00, allowQuantity: false },
+            { id: 'led', name: 'Supplemento LED', cost: 100.00, allowQuantity: false }, // Aggiornato a 100€
             { id: 'tamponatura', name: 'Supplemento Tamponatura', cost: 20.00, allowQuantity: false },
             { id: 'legno', name: 'Supplemento Legno (No Alpi)', cost: 40.00, allowQuantity: false },
             { id: 'cartoncino', name: 'Cartoncino Personalizzato', cost: 4.40, allowQuantity: true },
@@ -59,12 +58,28 @@
             { id: 'riporto', name: 'Riporto', cost: 12.00, allowQuantity: true },
         ];
 
+        // --- MATERIALI COSTE & COPERTINE (Prezzi dal PDF) ---
+        // Usiamo la stessa lista per Coste e Copertine Mini dove possibile, o definizioni specifiche
+        const SPINE_OPTIONS = [
+            { id: 'spine_coagulato', name: 'Coagulato / Woodplus (Base)', cost: 0, category: 'Base' },
+            { id: 'spine_alcantara', name: 'Alcantara / Velur', cost: 15.00, category: 'Upgrade' }, // Prezzo stimato dai supplementi mini
+            { id: 'spine_majolike', name: 'Majolike', cost: 70.00, category: 'Upgrade' },
+            { id: 'spine_sense', name: 'Sense / Kamur', cost: 90.00, category: 'Upgrade' },
+            { id: 'spine_groove', name: 'Groove', cost: 110.00, category: 'Upgrade' },
+            { id: 'spine_stone', name: 'Woodplus Stone', cost: 120.00, category: 'Upgrade' },
+            { id: 'spine_pelle', name: 'Pelle / Derma / Fragma', cost: 140.00, category: 'Upgrade' },
+            { id: 'spine_triade', name: 'Triade', cost: 160.00, category: 'Upgrade' },
+        ];
+
         // --- MINI COVERS ---
         const MINI_COVER_OPTIONS = [
             { id: 'mini_coagulato', name: 'Coagulato (Incluso)', cost: 0, category: 'Base' },
             { id: 'mini_alcantara', name: 'Alcantara / Velur', cost: 15.00, category: 'Upgrade' },
             { id: 'mini_kamur', name: 'Kamur', cost: 18.00, category: 'Upgrade' },
-            { id: 'mini_derma', name: 'Derma', cost: 20.00, category: 'Upgrade' },
+            { id: 'mini_derma', name: 'Derma / Pelle', cost: 20.00, category: 'Upgrade' },
+            // Aggiungiamo opzioni più costose dal listino principale per completezza sui mini
+            { id: 'mini_majolike', name: 'Majolike', cost: 65.00, category: 'Upgrade' },
+            { id: 'mini_sense', name: 'Sense', cost: 80.00, category: 'Upgrade' },
         ];
 
         // --- COVERS PRINCIPALI ---
@@ -125,7 +140,8 @@
                 name: 'Photoalbum 40x30',
                 cost: 370.00,
                 description: '30 Interni • 2 Mini Inclusi',
-                compatibleBoxIds: ['base_box', 'mark_ii', 'design_group', 'louvre', 'lumiere', 'loft_group', 'hashtag', 'genesi_box', 'triade_box']
+                compatibleBoxIds: ['base_box', 'mark_ii', 'design_group', 'louvre', 'lumiere', 'loft_group', 'hashtag', 'genesi_box', 'triade_box'],
+                allowBasicOption: true // Abilita checkbox "Basic"
             },
             {
                 id: '35x25',
@@ -176,7 +192,7 @@
         const { useState, useMemo } = React;
 
         // --- Selection Card ---
-        const SelectionCard = ({ item, isSelected, onSelect, quantity = 0, onQuantityChange }) => {
+        const SelectionCard = ({ item, isSelected, onSelect, quantity = 0, onQuantityChange, extraContent }) => {
             const isQuantityEnabled = item.allowQuantity;
 
             const handleIncrement = (e) => {
@@ -193,11 +209,10 @@
                 <div 
                     onClick={isQuantityEnabled ? undefined : onSelect}
                     className={`
-                        relative rounded-xl border-2 p-4 transition-all duration-200
+                        relative rounded-xl border-2 p-4 transition-all duration-200 cursor-pointer
                         ${isSelected || (isQuantityEnabled && quantity > 0)
                         ? 'border-indigo-600 bg-indigo-50 shadow-md' 
                         : 'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-sm'}
-                        ${!isQuantityEnabled ? 'cursor-pointer' : ''}
                     `}
                 >
                     <div className="flex justify-between items-start">
@@ -208,6 +223,7 @@
                             {item.description && (
                                 <p className="text-xs text-slate-500 mt-1">{item.description}</p>
                             )}
+                            {extraContent}
                         </div>
                         
                         <div className="text-right">
@@ -248,8 +264,27 @@
             );
         };
 
+        // --- Summary Row Helper ---
+        const SummaryRow = ({ label, sublabel, cost, isHeader = false, highlight = false, multiplier = PRICE_MULTIPLIER }) => {
+            const clientPrice = cost * multiplier;
+            return (
+                <div className={`grid grid-cols-12 gap-2 text-sm py-2 ${isHeader ? 'font-bold text-slate-800 border-b border-slate-300 mb-2' : 'border-b border-slate-50 last:border-0'}`}>
+                    <div className="col-span-6 flex flex-col justify-center">
+                        <span className={`${highlight ? 'text-indigo-700 font-semibold' : 'text-slate-700'}`}>{label}</span>
+                        {sublabel && <span className="text-xs text-slate-400">{sublabel}</span>}
+                    </div>
+                    <div className="col-span-3 text-right text-slate-500 font-mono flex items-center justify-end">
+                        {isHeader ? 'Studio' : `€${cost.toFixed(2)}`}
+                    </div>
+                    <div className="col-span-3 text-right font-bold text-indigo-700 font-mono flex items-center justify-end bg-indigo-50/50 rounded px-1">
+                        {isHeader ? 'Cliente' : `€${clientPrice.toFixed(2)}`}
+                    </div>
+                </div>
+            );
+        };
+
         // --- Summary (Sidebar) ---
-        const Summary = ({ album, spreadCount, cover, box, extras, miniCount, miniCover, onReset }) => {
+        const Summary = ({ album, isBasicPackage, spreadCount, cover, spine, box, extras, miniCount, miniCover, miniSpine, onReset }) => {
             const [vatRate, setVatRate] = useState(22);
 
             // Calcoli
@@ -257,13 +292,25 @@
             const spreadDiff = spreadCount - STANDARD_SPREADS;
             const spreadCostAdjustment = album ? spreadDiff * COST_PER_ADDITIONAL_SPREAD : 0;
             const coverCost = cover?.cost || 0;
+            const spineCost = spine?.cost || 0;
             const boxCost = box?.cost || 0;
 
+            // Mini Logic
             const extraMinis = Math.max(0, miniCount - INCLUDED_MINIS);
-            const totalMiniCost = (extraMinis * EXTRA_MINI_BASE_COST) + (miniCover ? (miniCount * miniCover.cost) : 0);
+            // Ogni mini extra costa 50€ di base
+            const miniBaseCostTotal = extraMinis * EXTRA_MINI_BASE_COST;
+            // Le copertine e le coste si pagano per OGNI mini (anche quelli inclusi nel numero base, se sono upgrade)
+            const miniCoverCostTotal = miniCover ? (miniCount * miniCover.cost) : 0;
+            const miniSpineCostTotal = miniSpine ? (miniCount * miniSpine.cost) : 0;
+            const totalMiniCost = miniBaseCostTotal + miniCoverCostTotal + miniSpineCostTotal;
+
             const extrasCost = extras.reduce((sum, { item, quantity }) => sum + (item.cost * quantity), 0);
             
-            const totalCost = baseCost + spreadCostAdjustment + coverCost + boxCost + totalMiniCost + extrasCost;
+            const totalCost = baseCost + spreadCostAdjustment + coverCost + spineCost + boxCost + totalMiniCost + extrasCost;
+            
+            // Basic Package Logic (Difference calculation)
+            const diffFromBase = totalCost - (album ? album.cost : 0);
+
             const sellPrice = totalCost * PRICE_MULTIPLIER;
             const priceWithVat = sellPrice * (1 + vatRate / 100);
 
@@ -271,84 +318,97 @@
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden sticky top-6">
                     <div className="bg-slate-900 p-4 flex justify-between items-center">
                         <h2 className="text-white font-bold text-lg flex items-center gap-2">
-                             {/* SVG Icon */}
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                            Riepilogo Costi
+                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                            Riepilogo
                         </h2>
-                        <button 
-                            onClick={onReset}
-                            className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-md transition-colors font-medium border border-slate-600"
-                        >
-                            Reset
-                        </button>
+                        <button onClick={onReset} className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-md border border-slate-600">Reset</button>
                     </div>
                     
-                    <div className="p-6 space-y-4">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-slate-600">Album Base</span>
-                            <span className="font-medium">{album ? `€${album.cost.toFixed(2)}` : '-'}</span>
-                        </div>
-                        {album && <div className="text-xs text-slate-400 -mt-3 pl-2">{album.name}</div>}
+                    <div className="p-4">
+                        {/* Table Header */}
+                        <SummaryRow label="Voce" isHeader />
 
-                        {album && spreadDiff !== 0 && (
-                            <div className="flex justify-between text-sm text-slate-600">
-                                <span>{spreadDiff > 0 ? `+${spreadDiff}` : spreadDiff} Interni</span>
-                                <span className={`font-medium ${spreadDiff > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                    {spreadDiff > 0 ? '+' : ''}€{spreadCostAdjustment.toFixed(2)}
-                                </span>
-                            </div>
+                        {/* Rows */}
+                        <SummaryRow label="Album Base" sublabel={album?.name} cost={album ? album.cost : 0} />
+                        
+                        {spreadDiff !== 0 && (
+                            <SummaryRow 
+                                label={`${spreadDiff > 0 ? '+' : ''}${spreadDiff} Interni`} 
+                                cost={spreadCostAdjustment} 
+                            />
                         )}
 
-                        <div className="flex justify-between text-sm">
-                            <span className="text-slate-600">Copertina</span>
-                            <span className="font-medium">{cover ? (cover.cost === 0 ? 'Inclusa' : `€${cover.cost.toFixed(2)}`) : '-'}</span>
-                        </div>
+                        {(coverCost > 0 || (cover && cover.name !== 'Woodplus')) && (
+                             <SummaryRow label="Copertina" sublabel={cover?.name} cost={coverCost} />
+                        )}
 
-                        <div className="flex justify-between text-sm">
-                            <span className="text-slate-600">Box</span>
-                            <span className="font-medium">{box ? (box.cost === 0 ? 'Incluso' : `€${box.cost.toFixed(2)}`) : '-'}</span>
-                        </div>
+                        {(spineCost > 0) && (
+                            <SummaryRow label="Costa (Dorso)" sublabel={spine?.name} cost={spineCost} />
+                        )}
 
-                        <div className="border-t border-slate-100 pt-3">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-600">Mini Album ({miniCount})</span>
-                                <span className="font-medium">€{totalMiniCost.toFixed(2)}</span>
-                            </div>
-                            {miniCover && miniCover.cost > 0 && miniCount > 0 && (
-                                <div className="text-xs text-slate-400 pl-2 mt-1">Upgrade: {miniCover.name}</div>
-                            )}
-                        </div>
+                        {(boxCost > 0) && (
+                            <SummaryRow label="Box" sublabel={box?.name} cost={boxCost} />
+                        )}
 
+                        {/* Mini Section Summary */}
+                        {miniCount > 0 && (
+                            <>
+                                <div className="border-t border-slate-100 my-1"></div>
+                                <SummaryRow label={`Mini Album (${miniCount})`} sublabel={`${extraMinis} Extra a pagamento`} cost={miniBaseCostTotal} />
+                                {miniCoverCostTotal > 0 && (
+                                    <SummaryRow label="Cover Mini" sublabel={`${miniCover?.name} (x${miniCount})`} cost={miniCoverCostTotal} />
+                                )}
+                                {miniSpineCostTotal > 0 && (
+                                    <SummaryRow label="Costa Mini" sublabel={`${miniSpine?.name} (x${miniCount})`} cost={miniSpineCostTotal} />
+                                )}
+                            </>
+                        )}
+
+                        {/* Extras */}
                         {extras.length > 0 && (
-                            <div className="border-t border-slate-100 pt-3">
-                                <div className="flex justify-between text-sm mb-2">
-                                    <span className="text-slate-600">Extra</span>
-                                    <span className="font-medium">€{extrasCost.toFixed(2)}</span>
-                                </div>
+                            <>
+                                <div className="border-t border-slate-100 my-1"></div>
                                 {extras.map(({item, quantity}) => (
-                                    <div key={item.id} className="text-xs text-slate-400 flex justify-between pl-2 mb-1">
-                                        <span>{quantity > 1 ? `${quantity}x ` : ''}{item.name}</span>
-                                        <span>€{(item.cost * quantity).toFixed(2)}</span>
-                                    </div>
+                                    <SummaryRow 
+                                        key={item.id}
+                                        label={item.name} 
+                                        sublabel={quantity > 1 ? `Quantità: ${quantity}` : ''}
+                                        cost={item.cost * quantity} 
+                                    />
                                 ))}
-                            </div>
+                            </>
                         )}
 
-                        <div className="border-t-2 border-slate-100 pt-4 mt-2">
-                            <div className="flex justify-between items-end mb-2">
-                                <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">Costo Studio</div>
-                                <div className="text-lg font-bold text-slate-700">€{totalCost.toFixed(2)}</div>
+                        {/* Totals */}
+                        <div className="border-t-2 border-slate-200 mt-4 pt-3">
+                            
+                            {/* Basic Package Highlight */}
+                            {isBasicPackage && album && (
+                                <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg mb-4 text-center">
+                                    <div className="text-xs text-orange-600 uppercase font-bold tracking-wider">Aggiunta al Base</div>
+                                    <div className="text-2xl font-bold text-orange-700">€{(diffFromBase * PRICE_MULTIPLIER).toFixed(2)}</div>
+                                    <div className="text-[10px] text-orange-400">Differenza Clienti (Totale - €{(album.cost * PRICE_MULTIPLIER).toFixed(2)})</div>
+                                </div>
+                            )}
+
+                            <div className="flex justify-between items-end mb-1 px-1">
+                                <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">Totale Studio</div>
+                                <div className="text-lg font-bold text-slate-600">€{totalCost.toFixed(2)}</div>
                             </div>
                             
-                            <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100 mb-4">
+                            <div className="bg-indigo-600 p-4 rounded-xl shadow-lg shadow-indigo-200 mt-2 text-white">
                                 <div className="flex justify-between items-end">
-                                    <div className="text-sm font-bold text-indigo-900">Prezzo Cliente</div>
-                                    <div className="text-2xl font-bold text-indigo-600">€{sellPrice.toFixed(2)}</div>
+                                    <div>
+                                        <div className="text-xs text-indigo-200 font-medium uppercase tracking-wider mb-1">Totale Cliente</div>
+                                        <div className="text-3xl font-bold leading-none">€{sellPrice.toFixed(2)}</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-xs text-indigo-300">Moltiplicatore x{PRICE_MULTIPLIER}</div>
+                                    </div>
                                 </div>
-                                <div className="text-right text-xs text-indigo-400 mt-1">(x{PRICE_MULTIPLIER})</div>
                             </div>
 
-                            <div className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                            <div className="flex items-center justify-between p-2 mt-4 bg-slate-100 rounded-lg">
                                 <div className="flex items-center gap-2">
                                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">IVA (%)</label>
                                     <input 
@@ -358,8 +418,8 @@
                                     />
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-[10px] text-slate-400 uppercase tracking-wide">Totale Ivato</div>
-                                    <div className="text-xl font-bold text-slate-900 leading-none">€{priceWithVat.toFixed(2)}</div>
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-wide">Ivato Cliente</div>
+                                    <div className="text-xl font-bold text-slate-800 leading-none">€{priceWithVat.toFixed(2)}</div>
                                 </div>
                             </div>
                         </div>
@@ -372,11 +432,14 @@
         const App = () => {
             const INITIAL_STATE = {
                 selectedAlbumId: null,
+                isBasicPackage: false,
                 spreadCount: STANDARD_SPREADS,
                 selectedCoverId: null,
+                selectedSpineId: SPINE_OPTIONS[0].id, // Default Spine Base
                 selectedBoxId: null,
                 miniCount: INCLUDED_MINIS,
                 selectedMiniCoverId: MINI_COVER_OPTIONS[0].id,
+                selectedMiniSpineId: SPINE_OPTIONS[0].id,
                 extras: {}
             };
 
@@ -386,12 +449,17 @@
             const selectedAlbum = useMemo(() => ALBUMS.find(a => a.id === state.selectedAlbumId) || null, [state.selectedAlbumId]);
             const compatibleCovers = useMemo(() => getCompatibleCovers(state.selectedAlbumId), [state.selectedAlbumId]);
             const selectedCover = useMemo(() => compatibleCovers.find(c => c.id === state.selectedCoverId) || null, [compatibleCovers, state.selectedCoverId]);
+            const selectedSpine = useMemo(() => SPINE_OPTIONS.find(s => s.id === state.selectedSpineId) || null, [state.selectedSpineId]);
+            
             const compatibleBoxes = useMemo(() => {
                 if (!selectedAlbum) return [];
                 return BOX_OPTIONS.filter(b => selectedAlbum.compatibleBoxIds.includes(b.id));
             }, [selectedAlbum]);
             const selectedBox = useMemo(() => compatibleBoxes.find(b => b.id === state.selectedBoxId) || null, [compatibleBoxes, state.selectedBoxId]);
+            
             const selectedMiniCover = useMemo(() => MINI_COVER_OPTIONS.find(c => c.id === state.selectedMiniCoverId) || null, [state.selectedMiniCoverId]);
+            const selectedMiniSpine = useMemo(() => SPINE_OPTIONS.find(s => s.id === state.selectedMiniSpineId) || null, [state.selectedMiniSpineId]);
+
             const selectedExtrasList = useMemo(() => {
                 return Object.entries(state.extras)
                     .filter(([_, qty]) => qty > 0)
@@ -413,26 +481,11 @@
                 setState(prev => ({
                     ...prev,
                     selectedAlbumId: id,
+                    isBasicPackage: false, // Reset basic flag
                     spreadCount: STANDARD_SPREADS,
                     selectedCoverId: null,
                     selectedBoxId: null
                 }));
-            };
-
-            const handleSpreadChange = (val) => {
-                const clamped = Math.max(10, Math.min(60, val));
-                setState(prev => ({ ...prev, spreadCount: clamped }));
-            };
-
-            const handleExtraQuantity = (id, qty) => {
-                setState(prev => ({ ...prev, extras: { ...prev.extras, [id]: qty } }));
-            };
-
-            const toggleBinaryExtra = (id) => {
-                setState(prev => {
-                    const currentQty = prev.extras[id] || 0;
-                    return { ...prev, extras: { ...prev.extras, [id]: currentQty > 0 ? 0 : 1 } };
-                });
             };
 
             return (
@@ -452,6 +505,7 @@
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             <div className="lg:col-span-8 space-y-10">
+                                
                                 {/* 1. Album */}
                                 <section className="animate-fade-in">
                                     <div className="flex items-center gap-3 mb-4">
@@ -465,6 +519,25 @@
                                                 item={album}
                                                 isSelected={state.selectedAlbumId === album.id}
                                                 onSelect={() => handleAlbumSelect(album.id)}
+                                                extraContent={
+                                                    album.allowBasicOption && state.selectedAlbumId === album.id && (
+                                                        <div 
+                                                            className="mt-3 bg-indigo-100 p-2 rounded-lg flex items-center gap-2"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <input 
+                                                                type="checkbox" 
+                                                                id="basicPkg"
+                                                                checked={state.isBasicPackage}
+                                                                onChange={(e) => setState(p => ({...p, isBasicPackage: e.target.checked}))}
+                                                                className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                                                            />
+                                                            <label htmlFor="basicPkg" className="text-sm font-semibold text-indigo-900 cursor-pointer select-none">
+                                                                Mostra solo aggiunte al Base
+                                                            </label>
+                                                        </div>
+                                                    )
+                                                }
                                             />
                                         ))}
                                     </div>
@@ -473,27 +546,36 @@
                                             <div className="flex justify-between items-center">
                                                 <div>
                                                     <label className="font-semibold text-slate-700 block">Numero Interni</label>
-                                                    <p className="text-xs text-slate-400 mt-1">Std: {STANDARD_SPREADS} Interni. Extra: +/- €{COST_PER_ADDITIONAL_SPREAD}</p>
+                                                    <p className="text-xs text-slate-400 mt-1">Std: {STANDARD_SPREADS}. Extra: +/- €{COST_PER_ADDITIONAL_SPREAD}</p>
                                                 </div>
                                                 <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
-                                                    <button onClick={() => handleSpreadChange(state.spreadCount - 1)} className="w-10 h-10 rounded-full bg-white border border-slate-300 font-bold hover:text-indigo-600">-</button>
+                                                    <button onClick={() => setState(p => ({...p, spreadCount: Math.max(10, p.spreadCount - 1)}))} className="w-10 h-10 rounded-full bg-white border border-slate-300 font-bold hover:text-indigo-600">-</button>
                                                     <span className="text-xl font-bold text-indigo-900 w-12 text-center">{state.spreadCount}</span>
-                                                    <button onClick={() => handleSpreadChange(state.spreadCount + 1)} className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700">+</button>
+                                                    <button onClick={() => setState(p => ({...p, spreadCount: p.spreadCount + 1}))} className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700">+</button>
                                                 </div>
                                             </div>
                                         </div>
                                     )}
                                 </section>
 
-                                {/* 2. Cover */}
+                                {/* 2. Cover & Spine */}
                                 <section className={`transition-opacity duration-300 ${!selectedAlbum ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
                                     <div className="flex items-center gap-3 mb-4">
                                         <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white text-sm font-bold">2</span>
-                                        <h2 className="text-xl font-bold text-slate-800">Copertina</h2>
+                                        <h2 className="text-xl font-bold text-slate-800">Copertina e Costa</h2>
                                     </div>
                                     <div className="space-y-6">
+                                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                            <h3 className="font-bold text-slate-700 mb-3">Materiale Costa (Dorso)</h3>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                                                {SPINE_OPTIONS.map(spine => (
+                                                    <SelectionCard key={spine.id} item={spine} isSelected={state.selectedSpineId === spine.id} onSelect={() => setState(p => ({...p, selectedSpineId: spine.id}))} />
+                                                ))}
+                                            </div>
+                                        </div>
+
                                         <div>
-                                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Base (Incluse)</h3>
+                                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Copertine Base</h3>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 {compatibleCovers.filter(c => c.category === 'Base').map(c => (
                                                     <SelectionCard key={c.id} item={c} isSelected={state.selectedCoverId === c.id} onSelect={() => setState(p => ({...p, selectedCoverId: c.id}))} />
@@ -501,7 +583,7 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Premium</h3>
+                                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Copertine Premium</h3>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 {compatibleCovers.filter(c => c.category === 'Upgrade').map(c => (
                                                     <SelectionCard key={c.id} item={c} isSelected={state.selectedCoverId === c.id} onSelect={() => setState(p => ({...p, selectedCoverId: c.id}))} />
@@ -534,7 +616,7 @@
                                         <div className="flex justify-between items-center">
                                             <div>
                                                 <label className="font-semibold text-slate-700 block">Quantità</label>
-                                                <p className="text-xs text-slate-400 mt-1">{INCLUDED_MINIS} inclusi nel prezzo.</p>
+                                                <p className="text-xs text-slate-400 mt-1">{INCLUDED_MINIS} inclusi. Extra a €50.00 cad.</p>
                                             </div>
                                             <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
                                                 <button onClick={() => setState(p => ({...p, miniCount: Math.max(0, p.miniCount - 1)}))} className="w-10 h-10 rounded-full bg-white border border-slate-300 font-bold hover:text-indigo-600">-</button>
@@ -544,12 +626,22 @@
                                         </div>
                                     </div>
                                     {state.miniCount > 0 && (
-                                        <div>
-                                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Copertina Mini</h3>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                                {MINI_COVER_OPTIONS.map(o => (
-                                                    <SelectionCard key={o.id} item={o} isSelected={state.selectedMiniCoverId === o.id} onSelect={() => setState(p => ({...p, selectedMiniCoverId: o.id}))} />
-                                                ))}
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Costa Mini (Prezzo Cad.)</h3>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                                    {SPINE_OPTIONS.map(s => (
+                                                        <SelectionCard key={s.id} item={s} isSelected={state.selectedMiniSpineId === s.id} onSelect={() => setState(p => ({...p, selectedMiniSpineId: s.id}))} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Copertina Mini (Prezzo Cad.)</h3>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                                    {MINI_COVER_OPTIONS.map(o => (
+                                                        <SelectionCard key={o.id} item={o} isSelected={state.selectedMiniCoverId === o.id} onSelect={() => setState(p => ({...p, selectedMiniCoverId: o.id}))} />
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -566,9 +658,9 @@
                                             <SelectionCard 
                                                 key={extra.id} item={extra} 
                                                 isSelected={!!state.extras[extra.id]} 
-                                                onSelect={() => !extra.allowQuantity && toggleBinaryExtra(extra.id)}
+                                                onSelect={() => !extra.allowQuantity && setState(p => ({...p, extras: {...p.extras, [extra.id]: p.extras[extra.id] ? 0 : 1}}))}
                                                 quantity={extra.allowQuantity ? (state.extras[extra.id] || 0) : undefined}
-                                                onQuantityChange={(q) => handleExtraQuantity(extra.id, q)}
+                                                onQuantityChange={(q) => setState(p => ({...p, extras: {...p.extras, [extra.id]: q}}))}
                                             />
                                         ))}
                                     </div>
@@ -577,10 +669,10 @@
 
                             <div className="lg:col-span-4">
                                 <Summary 
-                                    album={selectedAlbum} spreadCount={state.spreadCount}
-                                    cover={selectedCover} box={selectedBox}
+                                    album={selectedAlbum} isBasicPackage={state.isBasicPackage} spreadCount={state.spreadCount}
+                                    cover={selectedCover} spine={selectedSpine} box={selectedBox}
                                     extras={selectedExtrasList} miniCount={state.miniCount}
-                                    miniCover={selectedMiniCover} onReset={handleReset}
+                                    miniCover={selectedMiniCover} miniSpine={selectedMiniSpine} onReset={handleReset}
                                 />
                             </div>
                         </div>
@@ -597,3 +689,4 @@
     </script>
 </body>
 </html>
+    
