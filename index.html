@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -16,6 +17,7 @@
     
     <style>
         body { font-family: 'Inter', sans-serif; }
+<<<<<<< HEAD
         
         /* Animation Utilities */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -40,15 +42,28 @@
             @page { margin: 1cm; }
         }
         .print-only { display: none; }
+=======
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
     </style>
 <script type="importmap">
 {
   "imports": {
+<<<<<<< HEAD
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
     "vite": "https://esm.sh/vite@^7.2.7",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+=======
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "vite": "https://aistudiocdn.com/vite@^7.2.6",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
   }
 }
 </script>
@@ -60,6 +75,7 @@
     <script type="text/babel">
         
         /********************************************************************************
+<<<<<<< HEAD
          *  1. DATA & CONFIGURATION
          ********************************************************************************/
         const PRICE_MULTIPLIER = 1.5;
@@ -71,6 +87,19 @@
         // --- EXTRAS ---
         const EXTRAS = [
             { id: 'led', name: 'Supplemento LED', cost: 100.00, allowQuantity: false },
+=======
+         *  DATI E CONFIGURAZIONE
+         ********************************************************************************/
+        const PRICE_MULTIPLIER = 1.5;
+        const COST_PER_ADDITIONAL_SPREAD = 7.92;
+        const STANDARD_SPREADS = 30;
+        const INCLUDED_MINIS = 2;
+        const EXTRA_MINI_BASE_COST = 50.00; // Aggiornato a 50€
+
+        // --- EXTRAS ---
+        const EXTRAS = [
+            { id: 'led', name: 'Supplemento LED', cost: 100.00, allowQuantity: false }, // Aggiornato a 100€
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
             { id: 'tamponatura', name: 'Supplemento Tamponatura', cost: 20.00, allowQuantity: false },
             { id: 'legno', name: 'Supplemento Legno (No Alpi)', cost: 40.00, allowQuantity: false },
             { id: 'cartoncino', name: 'Cartoncino Personalizzato', cost: 4.40, allowQuantity: true },
@@ -79,10 +108,18 @@
             { id: 'riporto', name: 'Riporto', cost: 12.00, allowQuantity: true },
         ];
 
+<<<<<<< HEAD
         // --- SPINES (MAIN ALBUM) ---
         const SPINE_OPTIONS = [
             { id: 'spine_coagulato', name: 'Coagulato / Woodplus (Base)', cost: 0, category: 'Base' },
             { id: 'spine_alcantara', name: 'Alcantara / Velur', cost: 15.00, category: 'Upgrade' }, 
+=======
+        // --- MATERIALI COSTE & COPERTINE (Prezzi dal PDF) ---
+        // Usiamo la stessa lista per Coste e Copertine Mini dove possibile, o definizioni specifiche
+        const SPINE_OPTIONS = [
+            { id: 'spine_coagulato', name: 'Coagulato / Woodplus (Base)', cost: 0, category: 'Base' },
+            { id: 'spine_alcantara', name: 'Alcantara / Velur', cost: 15.00, category: 'Upgrade' }, // Prezzo stimato dai supplementi mini
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
             { id: 'spine_majolike', name: 'Majolike', cost: 70.00, category: 'Upgrade' },
             { id: 'spine_sense', name: 'Sense / Kamur', cost: 90.00, category: 'Upgrade' },
             { id: 'spine_groove', name: 'Groove', cost: 110.00, category: 'Upgrade' },
@@ -91,6 +128,7 @@
             { id: 'spine_triade', name: 'Triade', cost: 160.00, category: 'Upgrade' },
         ];
 
+<<<<<<< HEAD
         // --- SPINES (MINI ALBUM) ---
         const MINI_SPINE_OPTIONS = [
             { id: 'mini_spine_coagulato', name: 'Coagulato (Incluso)', cost: 0 },
@@ -106,11 +144,18 @@
         ];
 
         // --- COVERS (MINI ALBUM) ---
+=======
+        // --- MINI COVERS ---
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
         const MINI_COVER_OPTIONS = [
             { id: 'mini_coagulato', name: 'Coagulato (Incluso)', cost: 0, category: 'Base' },
             { id: 'mini_alcantara', name: 'Alcantara / Velur', cost: 15.00, category: 'Upgrade' },
             { id: 'mini_kamur', name: 'Kamur', cost: 18.00, category: 'Upgrade' },
             { id: 'mini_derma', name: 'Derma / Pelle', cost: 20.00, category: 'Upgrade' },
+<<<<<<< HEAD
+=======
+            // Aggiungiamo opzioni più costose dal listino principale per completezza sui mini
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
             { id: 'mini_majolike', name: 'Majolike', cost: 65.00, category: 'Upgrade' },
             { id: 'mini_sense', name: 'Sense', cost: 80.00, category: 'Upgrade' },
         ];
@@ -173,8 +218,14 @@
                 name: 'Photoalbum 40x30',
                 dimensions: '40x30',
                 cost: 370.00,
+<<<<<<< HEAD
                 description: 'Standard',
                 compatibleBoxIds: ['base_box', 'mark_ii', 'design_group', 'louvre', 'lumiere', 'loft_group', 'hashtag', 'genesi_box', 'triade_box'],
+=======
+                description: '30 Interni • 2 Mini Inclusi',
+                compatibleBoxIds: ['base_box', 'mark_ii', 'design_group', 'louvre', 'lumiere', 'loft_group', 'hashtag', 'genesi_box', 'triade_box'],
+                allowBasicOption: true // Abilita checkbox "Basic"
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
             },
             {
                 id: '35x25',
@@ -227,6 +278,7 @@
         
         const { useState, useMemo, useEffect } = React;
 
+<<<<<<< HEAD
         // --- Component: Selection Card ---
         const SelectionCard = ({ 
             item, 
@@ -238,6 +290,10 @@
             isIncluded = false,
             onToggleIncluded
         }) => {
+=======
+        // --- Selection Card ---
+        const SelectionCard = ({ item, isSelected, onSelect, quantity = 0, onQuantityChange, extraContent }) => {
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
             const isQuantityEnabled = item.allowQuantity;
 
             const handleIncrement = (e) => {
@@ -333,8 +389,32 @@
             );
         };
 
+<<<<<<< HEAD
         // --- Component: Summary Sidebar ---
         const Summary = ({ contract, album, spreadCount, cover, spine, box, extras, includedExtraIds, miniCount, miniCover, miniSpine, onReset }) => {
+=======
+        // --- Summary Row Helper ---
+        const SummaryRow = ({ label, sublabel, cost, isHeader = false, highlight = false, multiplier = PRICE_MULTIPLIER }) => {
+            const clientPrice = cost * multiplier;
+            return (
+                <div className={`grid grid-cols-12 gap-2 text-sm py-2 ${isHeader ? 'font-bold text-slate-800 border-b border-slate-300 mb-2' : 'border-b border-slate-50 last:border-0'}`}>
+                    <div className="col-span-6 flex flex-col justify-center">
+                        <span className={`${highlight ? 'text-indigo-700 font-semibold' : 'text-slate-700'}`}>{label}</span>
+                        {sublabel && <span className="text-xs text-slate-400">{sublabel}</span>}
+                    </div>
+                    <div className="col-span-3 text-right text-slate-500 font-mono flex items-center justify-end">
+                        {isHeader ? 'Studio' : `€${cost.toFixed(2)}`}
+                    </div>
+                    <div className="col-span-3 text-right font-bold text-indigo-700 font-mono flex items-center justify-end bg-indigo-50/50 rounded px-1">
+                        {isHeader ? 'Cliente' : `€${clientPrice.toFixed(2)}`}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Summary (Sidebar) ---
+        const Summary = ({ album, isBasicPackage, spreadCount, cover, spine, box, extras, miniCount, miniCover, miniSpine, onReset }) => {
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
             const [vatRate, setVatRate] = useState(22);
 
             // 1. Spreads Adjustment
@@ -346,6 +426,7 @@
             const spineCost = spine?.cost || 0;
             const boxCost = box?.cost || 0;
 
+<<<<<<< HEAD
             // 3. Mini Albums
             const extraMinis = Math.max(0, miniCount - contract.includedMinis);
             const miniBaseCostTotal = extraMinis * EXTRA_MINI_BASE_COST;
@@ -369,6 +450,26 @@
             const handlePrint = () => {
                 window.print();
             };
+=======
+            // Mini Logic
+            const extraMinis = Math.max(0, miniCount - INCLUDED_MINIS);
+            // Ogni mini extra costa 50€ di base
+            const miniBaseCostTotal = extraMinis * EXTRA_MINI_BASE_COST;
+            // Le copertine e le coste si pagano per OGNI mini (anche quelli inclusi nel numero base, se sono upgrade)
+            const miniCoverCostTotal = miniCover ? (miniCount * miniCover.cost) : 0;
+            const miniSpineCostTotal = miniSpine ? (miniCount * miniSpine.cost) : 0;
+            const totalMiniCost = miniBaseCostTotal + miniCoverCostTotal + miniSpineCostTotal;
+
+            const extrasCost = extras.reduce((sum, { item, quantity }) => sum + (item.cost * quantity), 0);
+            
+            const totalCost = baseCost + spreadCostAdjustment + coverCost + spineCost + boxCost + totalMiniCost + extrasCost;
+            
+            // Basic Package Logic (Difference calculation)
+            const diffFromBase = totalCost - (album ? album.cost : 0);
+
+            const sellPrice = totalCost * PRICE_MULTIPLIER;
+            const priceWithVat = sellPrice * (1 + vatRate / 100);
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
 
             return (
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden sticky top-6">
@@ -377,6 +478,7 @@
                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                             Riepilogo
                         </h2>
+<<<<<<< HEAD
                         <div className="flex gap-2">
                              <button onClick={handlePrint} className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-md border border-indigo-500 flex items-center gap-1">
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
@@ -498,6 +600,96 @@
                             </div>
 
                             <div className="flex items-center justify-between p-2 mt-4 bg-slate-100 rounded-lg no-print">
+=======
+                        <button onClick={onReset} className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-md border border-slate-600">Reset</button>
+                    </div>
+                    
+                    <div className="p-4">
+                        {/* Table Header */}
+                        <SummaryRow label="Voce" isHeader />
+
+                        {/* Rows */}
+                        <SummaryRow label="Album Base" sublabel={album?.name} cost={album ? album.cost : 0} />
+                        
+                        {spreadDiff !== 0 && (
+                            <SummaryRow 
+                                label={`${spreadDiff > 0 ? '+' : ''}${spreadDiff} Interni`} 
+                                cost={spreadCostAdjustment} 
+                            />
+                        )}
+
+                        {(coverCost > 0 || (cover && cover.name !== 'Woodplus')) && (
+                             <SummaryRow label="Copertina" sublabel={cover?.name} cost={coverCost} />
+                        )}
+
+                        {(spineCost > 0) && (
+                            <SummaryRow label="Costa (Dorso)" sublabel={spine?.name} cost={spineCost} />
+                        )}
+
+                        {(boxCost > 0) && (
+                            <SummaryRow label="Box" sublabel={box?.name} cost={boxCost} />
+                        )}
+
+                        {/* Mini Section Summary */}
+                        {miniCount > 0 && (
+                            <>
+                                <div className="border-t border-slate-100 my-1"></div>
+                                <SummaryRow label={`Mini Album (${miniCount})`} sublabel={`${extraMinis} Extra a pagamento`} cost={miniBaseCostTotal} />
+                                {miniCoverCostTotal > 0 && (
+                                    <SummaryRow label="Cover Mini" sublabel={`${miniCover?.name} (x${miniCount})`} cost={miniCoverCostTotal} />
+                                )}
+                                {miniSpineCostTotal > 0 && (
+                                    <SummaryRow label="Costa Mini" sublabel={`${miniSpine?.name} (x${miniCount})`} cost={miniSpineCostTotal} />
+                                )}
+                            </>
+                        )}
+
+                        {/* Extras */}
+                        {extras.length > 0 && (
+                            <>
+                                <div className="border-t border-slate-100 my-1"></div>
+                                {extras.map(({item, quantity}) => (
+                                    <SummaryRow 
+                                        key={item.id}
+                                        label={item.name} 
+                                        sublabel={quantity > 1 ? `Quantità: ${quantity}` : ''}
+                                        cost={item.cost * quantity} 
+                                    />
+                                ))}
+                            </>
+                        )}
+
+                        {/* Totals */}
+                        <div className="border-t-2 border-slate-200 mt-4 pt-3">
+                            
+                            {/* Basic Package Highlight */}
+                            {isBasicPackage && album && (
+                                <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg mb-4 text-center">
+                                    <div className="text-xs text-orange-600 uppercase font-bold tracking-wider">Aggiunta al Base</div>
+                                    <div className="text-2xl font-bold text-orange-700">€{(diffFromBase * PRICE_MULTIPLIER).toFixed(2)}</div>
+                                    <div className="text-[10px] text-orange-400">Differenza Clienti (Totale - €{(album.cost * PRICE_MULTIPLIER).toFixed(2)})</div>
+                                </div>
+                            )}
+
+                            <div className="flex justify-between items-end mb-1 px-1">
+                                <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">Totale Studio</div>
+                                <div className="text-lg font-bold text-slate-600">€{totalCost.toFixed(2)}</div>
+                            </div>
+                            
+                            <div className="bg-indigo-600 p-4 rounded-xl shadow-lg shadow-indigo-200 mt-2 text-white">
+                                <div className="flex justify-between items-end">
+                                    <div>
+                                        <div className="text-xs text-indigo-200 font-medium uppercase tracking-wider mb-1">Totale Cliente</div>
+                                        <div className="text-3xl font-bold leading-none">€{sellPrice.toFixed(2)}</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-xs text-indigo-300">Moltiplicatore x{PRICE_MULTIPLIER}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between p-2 mt-4 bg-slate-100 rounded-lg">
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                                 <div className="flex items-center gap-2">
                                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">IVA (%)</label>
                                     <input 
@@ -507,7 +699,11 @@
                                     />
                                 </div>
                                 <div className="text-right">
+<<<<<<< HEAD
                                     <div className="text-[10px] text-slate-400 uppercase tracking-wide">Totale Ivato</div>
+=======
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-wide">Ivato Cliente</div>
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                                     <div className="text-xl font-bold text-slate-800 leading-none">€{priceWithVat.toFixed(2)}</div>
                                 </div>
                             </div>
@@ -527,6 +723,7 @@
         
         const App = () => {
             const INITIAL_STATE = {
+<<<<<<< HEAD
                 contract: null,
                 spreadCount: STANDARD_SPREADS,
                 selectedCoverId: null,
@@ -537,6 +734,18 @@
                 selectedMiniSpineId: MINI_SPINE_OPTIONS[0].id,
                 extras: {},
                 includedExtraIds: [] // Array di ID degli extra marcati come "Inclusi"
+=======
+                selectedAlbumId: null,
+                isBasicPackage: false,
+                spreadCount: STANDARD_SPREADS,
+                selectedCoverId: null,
+                selectedSpineId: SPINE_OPTIONS[0].id, // Default Spine Base
+                selectedBoxId: null,
+                miniCount: INCLUDED_MINIS,
+                selectedMiniCoverId: MINI_COVER_OPTIONS[0].id,
+                selectedMiniSpineId: SPINE_OPTIONS[0].id,
+                extras: {}
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
             };
 
             const [state, setState] = useState(INITIAL_STATE);
@@ -582,7 +791,11 @@
             const selectedBox = useMemo(() => compatibleBoxes.find(b => b.id === state.selectedBoxId) || null, [compatibleBoxes, state.selectedBoxId]);
             
             const selectedMiniCover = useMemo(() => MINI_COVER_OPTIONS.find(c => c.id === state.selectedMiniCoverId) || null, [state.selectedMiniCoverId]);
+<<<<<<< HEAD
             const selectedMiniSpine = useMemo(() => MINI_SPINE_OPTIONS.find(s => s.id === state.selectedMiniSpineId) || null, [state.selectedMiniSpineId]);
+=======
+            const selectedMiniSpine = useMemo(() => SPINE_OPTIONS.find(s => s.id === state.selectedMiniSpineId) || null, [state.selectedMiniSpineId]);
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
 
             const selectedExtrasList = useMemo(() => {
                 return Object.entries(state.extras)
@@ -605,6 +818,7 @@
                 }
                 setState(prev => ({
                     ...prev,
+<<<<<<< HEAD
                     contract: { ...tempContract },
                     spreadCount: tempContract.includedSpreads,
                     miniCount: tempContract.includedMinis,
@@ -700,6 +914,16 @@
             }
 
             // RENDER MAIN APP
+=======
+                    selectedAlbumId: id,
+                    isBasicPackage: false, // Reset basic flag
+                    spreadCount: STANDARD_SPREADS,
+                    selectedCoverId: null,
+                    selectedBoxId: null
+                }));
+            };
+
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
             return (
                 <div className="min-h-screen flex flex-col">
                     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm no-print">
@@ -719,13 +943,20 @@
 
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<<<<<<< HEAD
                             <div className="lg:col-span-8 space-y-10 no-print">
                                 {/* 1. Album Info (Read Only) */}
+=======
+                            <div className="lg:col-span-8 space-y-10">
+                                
+                                {/* 1. Album */}
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                                 <section className="animate-fade-in">
                                     <div className="flex items-center gap-3 mb-4">
                                         <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white text-sm font-bold">1</span>
                                         <h2 className="text-xl font-bold text-slate-800">Interni</h2>
                                     </div>
+<<<<<<< HEAD
                                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                                         <div className="mb-4 pb-4 border-b border-slate-100">
                                             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Album Base (da Contratto)</h3>
@@ -740,13 +971,60 @@
                                                 <button onClick={() => setState(p => ({...p, spreadCount: Math.max(10, p.spreadCount - 1)}))} className="w-10 h-10 rounded-full bg-white border border-slate-300 font-bold hover:text-indigo-600">-</button>
                                                 <span className="text-xl font-bold text-indigo-900 w-12 text-center">{state.spreadCount}</span>
                                                 <button onClick={() => setState(p => ({...p, spreadCount: p.spreadCount + 1}))} className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700">+</button>
+=======
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                                        {ALBUMS.map(album => (
+                                            <SelectionCard
+                                                key={album.id}
+                                                item={album}
+                                                isSelected={state.selectedAlbumId === album.id}
+                                                onSelect={() => handleAlbumSelect(album.id)}
+                                                extraContent={
+                                                    album.allowBasicOption && state.selectedAlbumId === album.id && (
+                                                        <div 
+                                                            className="mt-3 bg-indigo-100 p-2 rounded-lg flex items-center gap-2"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <input 
+                                                                type="checkbox" 
+                                                                id="basicPkg"
+                                                                checked={state.isBasicPackage}
+                                                                onChange={(e) => setState(p => ({...p, isBasicPackage: e.target.checked}))}
+                                                                className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                                                            />
+                                                            <label htmlFor="basicPkg" className="text-sm font-semibold text-indigo-900 cursor-pointer select-none">
+                                                                Mostra solo aggiunte al Base
+                                                            </label>
+                                                        </div>
+                                                    )
+                                                }
+                                            />
+                                        ))}
+                                    </div>
+                                    {selectedAlbum && (
+                                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                                            <div className="flex justify-between items-center">
+                                                <div>
+                                                    <label className="font-semibold text-slate-700 block">Numero Interni</label>
+                                                    <p className="text-xs text-slate-400 mt-1">Std: {STANDARD_SPREADS}. Extra: +/- €{COST_PER_ADDITIONAL_SPREAD}</p>
+                                                </div>
+                                                <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                                    <button onClick={() => setState(p => ({...p, spreadCount: Math.max(10, p.spreadCount - 1)}))} className="w-10 h-10 rounded-full bg-white border border-slate-300 font-bold hover:text-indigo-600">-</button>
+                                                    <span className="text-xl font-bold text-indigo-900 w-12 text-center">{state.spreadCount}</span>
+                                                    <button onClick={() => setState(p => ({...p, spreadCount: p.spreadCount + 1}))} className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700">+</button>
+                                                </div>
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                                             </div>
                                         </div>
                                     </div>
                                 </section>
 
                                 {/* 2. Cover & Spine */}
+<<<<<<< HEAD
                                 <section>
+=======
+                                <section className={`transition-opacity duration-300 ${!selectedAlbum ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                                     <div className="flex items-center gap-3 mb-4">
                                         <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white text-sm font-bold">2</span>
                                         <h2 className="text-xl font-bold text-slate-800">Copertina e Costa</h2>
@@ -760,6 +1038,10 @@
                                                 ))}
                                             </div>
                                         </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                                         <div>
                                             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Copertine Base</h3>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -801,8 +1083,13 @@
                                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6">
                                         <div className="flex justify-between items-center">
                                             <div>
+<<<<<<< HEAD
                                                 <label className="font-semibold text-slate-700 block">Quantità Totale</label>
                                                 <p className="text-xs text-slate-400 mt-1">Inclusi nel contratto: {state.contract.includedMinis}</p>
+=======
+                                                <label className="font-semibold text-slate-700 block">Quantità</label>
+                                                <p className="text-xs text-slate-400 mt-1">{INCLUDED_MINIS} inclusi. Extra a €50.00 cad.</p>
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                                             </div>
                                             <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
                                                 <button onClick={() => setState(p => ({...p, miniCount: Math.max(0, p.miniCount - 1)}))} className="w-10 h-10 rounded-full bg-white border border-slate-300 font-bold hover:text-indigo-600">-</button>
@@ -816,7 +1103,11 @@
                                             <div>
                                                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Costa Mini (Prezzo Cad.)</h3>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+<<<<<<< HEAD
                                                     {MINI_SPINE_OPTIONS.map(s => (
+=======
+                                                    {SPINE_OPTIONS.map(s => (
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                                                         <SelectionCard key={s.id} item={s} isSelected={state.selectedMiniSpineId === s.id} onSelect={() => setState(p => ({...p, selectedMiniSpineId: s.id}))} />
                                                     ))}
                                                 </div>
@@ -847,9 +1138,12 @@
                                                 onSelect={() => !extra.allowQuantity && setState(p => ({...p, extras: {...p.extras, [extra.id]: p.extras[extra.id] ? 0 : 1}}))}
                                                 quantity={extra.allowQuantity ? (state.extras[extra.id] || 0) : undefined}
                                                 onQuantityChange={(q) => setState(p => ({...p, extras: {...p.extras, [extra.id]: q}}))}
+<<<<<<< HEAD
                                                 // Nuove props per "Incluso nel contratto"
                                                 isIncluded={state.includedExtraIds.includes(extra.id)}
                                                 onToggleIncluded={(checked) => toggleExtraIncluded(extra.id, checked)}
+=======
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                                             />
                                         ))}
                                     </div>
@@ -858,16 +1152,26 @@
 
                             <div className="lg:col-span-4">
                                 <Summary 
+<<<<<<< HEAD
                                     contract={state.contract} album={selectedAlbum} spreadCount={state.spreadCount}
                                     cover={selectedCover} spine={selectedSpine} box={selectedBox}
                                     extras={selectedExtrasList} includedExtraIds={state.includedExtraIds}
                                     miniCount={state.miniCount}
+=======
+                                    album={selectedAlbum} isBasicPackage={state.isBasicPackage} spreadCount={state.spreadCount}
+                                    cover={selectedCover} spine={selectedSpine} box={selectedBox}
+                                    extras={selectedExtrasList} miniCount={state.miniCount}
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                                     miniCover={selectedMiniCover} miniSpine={selectedMiniSpine} onReset={handleReset}
                                 />
                             </div>
                         </div>
                     </main>
+<<<<<<< HEAD
                     <footer className="bg-white border-t border-slate-200 mt-auto py-6 text-center no-print">
+=======
+                    <footer className="bg-white border-t border-slate-200 mt-auto py-6 text-center">
+>>>>>>> 9cf36f6663e4c289bdf9e36d9a32858bf57046ad
                         <p className="text-slate-400 font-medium text-sm">Developed with ❤️ by Angelo</p>
                     </footer>
                 </div>
@@ -879,3 +1183,4 @@
     </script>
 </body>
 </html>
+    
