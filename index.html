@@ -236,8 +236,8 @@
             quantity = 0, 
             onQuantityChange, 
             extraContent,
-            isIncluded = false,
-            onToggleIncluded
+            includedQuantity = 0,
+            onIncludedQuantityChange
         }) => {
             const isQuantityEnabled = item.allowQuantity;
 
@@ -248,16 +248,46 @@
 
             const handleDecrement = (e) => {
                 e.stopPropagation();
-                if (onQuantityChange && quantity > 0) onQuantityChange(quantity - 1);
+                if (onQuantityChange && quantity > 0) {
+                    const newQty = quantity - 1;
+                    onQuantityChange(newQty);
+                    // Adjust included quantity if total drops below it
+                    if (onIncludedQuantityChange && includedQuantity > newQty) {
+                        onIncludedQuantityChange(newQty);
+                    }
+                }
             };
 
+            // Toggle "Incluso": if unchecked -> 0. If checked -> max possible (quantity)
             const handleToggleIncluded = (e) => {
                 e.stopPropagation();
-                if (onToggleIncluded) onToggleIncluded(e.target.checked);
+                if (onIncludedQuantityChange) {
+                    if (e.target.checked) {
+                        // Default to ALL selected being included, user can adjust down
+                        onIncludedQuantityChange(isQuantityEnabled ? quantity : 1); 
+                    } else {
+                        onIncludedQuantityChange(0);
+                    }
+                }
             }
+
+            const handleIncludedIncrement = (e) => {
+                e.stopPropagation();
+                if (onIncludedQuantityChange && includedQuantity < quantity) {
+                    onIncludedQuantityChange(includedQuantity + 1);
+                }
+            };
+
+            const handleIncludedDecrement = (e) => {
+                e.stopPropagation();
+                if (onIncludedQuantityChange && includedQuantity > 0) {
+                    onIncludedQuantityChange(includedQuantity - 1);
+                }
+            };
 
             // Calcolo Prezzo Cliente da mostrare
             const displayCost = item.cost * PRICE_MULTIPLIER;
+            const isFullyIncluded = quantity > 0 && includedQuantity === quantity;
 
             return (
                 <div 
@@ -282,7 +312,7 @@
                         
                         <div className="text-right">
                             <span className={`block font-bold text-sm ${isSelected || quantity > 0 ? 'text-indigo-700' : 'text-slate-700'}`}>
-                                {item.cost === 0 || isIncluded ? 'Incl.' : `+€${displayCost.toFixed(2)}`}
+                                {item.cost === 0 || isFullyIncluded ? 'Incl.' : `+€${displayCost.toFixed(2)}`}
                             </span>
                             
                             {!isQuantityEnabled && isSelected && (
@@ -315,22 +345,48 @@
                         </div>
                     )}
 
-                    {/* Checkbox "Incluso nel contratto" - Visibile solo se selezionato o quantità > 0 e se la funzione è passata */}
-                    {(isSelected || quantity > 0) && onToggleIncluded && (
+                    {/* Checkbox "Incluso nel contratto" con gestione quantità */}
+                    {(isSelected || quantity > 0) && onIncludedQuantityChange && (
                         <div 
-                            className="mt-3 pt-2 border-t border-indigo-200 flex items-center gap-2"
+                            className="mt-3 pt-2 border-t border-indigo-200"
                             onClick={(e) => e.stopPropagation()} 
                         >
-                            <input 
-                                type="checkbox" 
-                                id={`included-${item.id}`}
-                                checked={isIncluded} 
-                                onChange={handleToggleIncluded}
-                                className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
-                            />
-                            <label htmlFor={`included-${item.id}`} className="text-xs font-medium text-slate-700 cursor-pointer select-none">
-                                Incluso nel contratto
-                            </label>
+                            <div className="flex items-center gap-2">
+                                <input 
+                                    type="checkbox" 
+                                    id={`included-${item.id}`}
+                                    checked={includedQuantity > 0} 
+                                    onChange={handleToggleIncluded}
+                                    className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                                />
+                                <label htmlFor={`included-${item.id}`} className="text-xs font-medium text-slate-700 cursor-pointer select-none">
+                                    Incluso nel contratto
+                                </label>
+                            </div>
+                            
+                            {/* Controls for specific included quantity if checked and item allows quantity */}
+                            {includedQuantity > 0 && isQuantityEnabled && (
+                                <div className="flex items-center justify-between mt-2 pl-6">
+                                    <span className="text-[10px] uppercase font-bold text-slate-500">Quantità inclusa:</span>
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={handleIncludedDecrement}
+                                            className="w-5 h-5 rounded flex items-center justify-center bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300"
+                                        >
+                                            -
+                                        </button>
+                                        <span className="text-xs font-bold w-4 text-center text-indigo-700">{includedQuantity}</span>
+                                        <button 
+                                            onClick={handleIncludedIncrement}
+                                            className={`w-5 h-5 rounded flex items-center justify-center text-xs font-bold
+                                            ${includedQuantity < quantity ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-100 text-slate-300 cursor-not-allowed'}`}
+                                            disabled={includedQuantity >= quantity}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -338,7 +394,7 @@
         };
 
         // --- Component: Summary Sidebar ---
-        const Summary = ({ contract, album, spreadCount, cover, spine, box, extras, includedExtraIds, miniCount, miniCover, miniSpine, onReset }) => {
+        const Summary = ({ contract, album, spreadCount, cover, spine, box, extras, includedExtraCounts, miniCount, miniCover, miniSpine, onReset }) => {
             const [vatRate, setVatRate] = useState(22);
 
             // 1. Spreads Adjustment
@@ -357,11 +413,19 @@
             const miniSpineCostTotal = miniSpine ? (miniCount * miniSpine.cost) : 0;
             const totalMiniVariations = miniBaseCostTotal + miniCoverCostTotal + miniSpineCostTotal;
 
-            // 4. Extras (Separazione tra pagati e inclusi)
-            const paidExtras = extras.filter(e => !includedExtraIds.includes(e.item.id));
-            const includedExtrasList = extras.filter(e => includedExtraIds.includes(e.item.id));
+            // 4. Extras (Separazione tra pagati e inclusi con quantità)
+            const processedExtras = extras.map(({ item, quantity }) => {
+                const includedQty = includedExtraCounts[item.id] || 0;
+                // Ensure we don't count more included than selected (safety check)
+                const validIncludedQty = Math.min(quantity, includedQty);
+                const paidQty = Math.max(0, quantity - validIncludedQty);
+                return { item, totalQty: quantity, includedQty: validIncludedQty, paidQty };
+            });
+
+            const paidExtras = processedExtras.filter(e => e.paidQty > 0);
+            const includedExtrasList = processedExtras.filter(e => e.includedQty > 0);
             
-            const extrasCost = paidExtras.reduce((sum, { item, quantity }) => sum + (item.cost * quantity), 0);
+            const extrasCost = paidExtras.reduce((sum, { item, paidQty }) => sum + (item.cost * paidQty), 0);
             
             // TOTALI
             const totalVariationsCostStudio = spreadCostAdjustment + coverCost + spineCost + boxCost + totalMiniVariations + extrasCost;
@@ -415,11 +479,11 @@
                         {/* Lista Extra Inclusi */}
                         {includedExtrasList.length > 0 && (
                             <div className="mt-3 pt-2 border-t border-slate-200">
-                                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Extra Inclusi:</span>
+                                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Extra Inclusi (Gratuiti):</span>
                                 <div className="text-xs text-slate-600 flex flex-wrap gap-2">
                                     {includedExtrasList.map(e => (
                                         <span key={e.item.id} className="bg-white border border-slate-200 px-1.5 py-0.5 rounded">
-                                            {e.item.name} {e.quantity > 1 ? `(x${e.quantity})` : ''}
+                                            {e.item.name} {e.includedQty > 1 ? `(x${e.includedQty})` : ''}
                                         </span>
                                     ))}
                                 </div>
@@ -485,10 +549,10 @@
                                 </div>
                             )}
 
-                            {paidExtras.map(({item, quantity}) => (
+                            {paidExtras.map(({item, paidQty}) => (
                                 <div key={item.id} className="flex justify-between text-sm">
-                                    <span className="text-slate-600">{quantity > 1 ? `${quantity}x ` : ''}{item.name}</span>
-                                    <span className="font-medium">€{(item.cost * quantity * PRICE_MULTIPLIER).toFixed(2)}</span>
+                                    <span className="text-slate-600">{paidQty > 1 ? `${paidQty}x ` : ''}{item.name}</span>
+                                    <span className="font-medium">€{(item.cost * paidQty * PRICE_MULTIPLIER).toFixed(2)}</span>
                                 </div>
                             ))}
 
@@ -575,7 +639,7 @@
                 selectedMiniCoverId: MINI_COVER_OPTIONS[0].id,
                 selectedMiniSpineId: MINI_SPINE_OPTIONS[0].id,
                 extras: {},
-                includedExtraIds: [] // Array di ID degli extra marcati come "Inclusi"
+                includedExtraCounts: {} // Mappa ID Extra -> Quantità Inclusa
             };
 
             const [state, setState] = useState(INITIAL_STATE);
@@ -665,16 +729,14 @@
                 }
             };
 
-            const toggleExtraIncluded = (extraId, isIncluded) => {
-                setState(prev => {
-                    const currentIncluded = new Set(prev.includedExtraIds);
-                    if (isIncluded) {
-                        currentIncluded.add(extraId);
-                    } else {
-                        currentIncluded.delete(extraId);
+            const setExtraIncludedQuantity = (extraId, quantity) => {
+                setState(prev => ({
+                    ...prev,
+                    includedExtraCounts: {
+                        ...prev.includedExtraCounts,
+                        [extraId]: quantity
                     }
-                    return { ...prev, includedExtraIds: Array.from(currentIncluded) };
-                });
+                }));
             };
 
             // RENDER SETUP SCREEN
@@ -888,8 +950,8 @@
                                                 quantity={extra.allowQuantity ? (state.extras[extra.id] || 0) : undefined}
                                                 onQuantityChange={(q) => setState(p => ({...p, extras: {...p.extras, [extra.id]: q}}))}
                                                 // Nuove props per "Incluso nel contratto"
-                                                isIncluded={state.includedExtraIds.includes(extra.id)}
-                                                onToggleIncluded={(checked) => toggleExtraIncluded(extra.id, checked)}
+                                                includedQuantity={state.includedExtraCounts[extra.id] || 0}
+                                                onIncludedQuantityChange={(qty) => setExtraIncludedQuantity(extra.id, qty)}
                                             />
                                         ))}
                                     </div>
@@ -900,7 +962,7 @@
                                 <Summary 
                                     contract={state.contract} album={selectedAlbum} spreadCount={state.spreadCount}
                                     cover={selectedCover} spine={selectedSpine} box={selectedBox}
-                                    extras={selectedExtrasList} includedExtraIds={state.includedExtraIds}
+                                    extras={selectedExtrasList} includedExtraCounts={state.includedExtraCounts}
                                     miniCount={state.miniCount}
                                     miniCover={selectedMiniCover} miniSpine={selectedMiniSpine} onReset={handleReset}
                                 />
