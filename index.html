@@ -180,7 +180,7 @@
                 id: '35x25',
                 name: 'Photoalbum 35x25',
                 dimensions: '35x25',
-                cost: 340.00,
+                cost: 370.00,
                 description: 'Standard',
                 compatibleBoxIds: ['base_box', 'mark_ii', 'design_group', 'louvre', 'lumiere', 'loft_group', 'hashtag', 'genesi_box', 'triade_box']
             },
@@ -188,7 +188,7 @@
                 id: '45x35',
                 name: 'Photoalbum 45x35',
                 dimensions: '45x35',
-                cost: 410.00,
+                cost: 370.00,
                 description: 'Standard',
                 compatibleBoxIds: ['base_box', 'mark_ii', 'design_group', 'louvre', 'lumiere', 'loft_group', 'hashtag', 'genesi_box', 'triade_box']
             },
@@ -225,10 +225,19 @@
          *  2. COMPONENTS
          ********************************************************************************/
         
-        const { useState, useMemo } = React;
+        const { useState, useMemo, useEffect } = React;
 
         // --- Component: Selection Card ---
-        const SelectionCard = ({ item, isSelected, onSelect, quantity = 0, onQuantityChange, extraContent }) => {
+        const SelectionCard = ({ 
+            item, 
+            isSelected, 
+            onSelect, 
+            quantity = 0, 
+            onQuantityChange, 
+            extraContent,
+            isIncluded = false,
+            onToggleIncluded
+        }) => {
             const isQuantityEnabled = item.allowQuantity;
 
             const handleIncrement = (e) => {
@@ -240,6 +249,11 @@
                 e.stopPropagation();
                 if (onQuantityChange && quantity > 0) onQuantityChange(quantity - 1);
             };
+
+            const handleToggleIncluded = (e) => {
+                e.stopPropagation();
+                if (onToggleIncluded) onToggleIncluded(e.target.checked);
+            }
 
             return (
                 <div 
@@ -264,7 +278,7 @@
                         
                         <div className="text-right">
                             <span className={`block font-bold text-sm ${isSelected || quantity > 0 ? 'text-indigo-700' : 'text-slate-700'}`}>
-                                {item.cost === 0 ? 'Incl.' : `+€${item.cost.toFixed(2)}`}
+                                {item.cost === 0 || isIncluded ? 'Incl.' : `+€${item.cost.toFixed(2)}`}
                             </span>
                             
                             {!isQuantityEnabled && isSelected && (
@@ -296,12 +310,31 @@
                             </button>
                         </div>
                     )}
+
+                    {/* Checkbox "Incluso nel contratto" - Visibile solo se selezionato o quantità > 0 e se la funzione è passata */}
+                    {(isSelected || quantity > 0) && onToggleIncluded && (
+                        <div 
+                            className="mt-3 pt-2 border-t border-indigo-200 flex items-center gap-2"
+                            onClick={(e) => e.stopPropagation()} 
+                        >
+                            <input 
+                                type="checkbox" 
+                                id={`included-${item.id}`}
+                                checked={isIncluded} 
+                                onChange={handleToggleIncluded}
+                                className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                            />
+                            <label htmlFor={`included-${item.id}`} className="text-xs font-medium text-slate-700 cursor-pointer select-none">
+                                Incluso nel contratto
+                            </label>
+                        </div>
+                    )}
                 </div>
             );
         };
 
         // --- Component: Summary Sidebar ---
-        const Summary = ({ contract, album, spreadCount, cover, spine, box, extras, miniCount, miniCover, miniSpine, onReset }) => {
+        const Summary = ({ contract, album, spreadCount, cover, spine, box, extras, includedExtraIds, miniCount, miniCover, miniSpine, onReset }) => {
             const [vatRate, setVatRate] = useState(22);
 
             // 1. Spreads Adjustment
@@ -320,8 +353,11 @@
             const miniSpineCostTotal = miniSpine ? (miniCount * miniSpine.cost) : 0;
             const totalMiniVariations = miniBaseCostTotal + miniCoverCostTotal + miniSpineCostTotal;
 
-            // 4. Extras
-            const extrasCost = extras.reduce((sum, { item, quantity }) => sum + (item.cost * quantity), 0);
+            // 4. Extras (Separazione tra pagati e inclusi)
+            const paidExtras = extras.filter(e => !includedExtraIds.includes(e.item.id));
+            const includedExtrasList = extras.filter(e => includedExtraIds.includes(e.item.id));
+            
+            const extrasCost = paidExtras.reduce((sum, { item, quantity }) => sum + (item.cost * quantity), 0);
             
             // TOTALI
             const totalVariationsCostStudio = spreadCostAdjustment + coverCost + spineCost + boxCost + totalMiniVariations + extrasCost;
@@ -363,6 +399,20 @@
                             <span>• {contract.includedSpreads} Interni</span>
                             <span>• {contract.includedMinis} Mini</span>
                         </div>
+                        
+                        {/* Lista Extra Inclusi */}
+                        {includedExtrasList.length > 0 && (
+                            <div className="mt-3 pt-2 border-t border-slate-200">
+                                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Extra Inclusi:</span>
+                                <div className="text-xs text-slate-600 flex flex-wrap gap-2">
+                                    {includedExtrasList.map(e => (
+                                        <span key={e.item.id} className="bg-white border border-slate-200 px-1.5 py-0.5 rounded">
+                                            {e.item.name} {e.quantity > 1 ? `(x${e.quantity})` : ''}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     
                     <div className="p-4">
@@ -370,7 +420,7 @@
                             <h3 className="text-sm font-bold text-indigo-900 uppercase tracking-wide">Aggiunte / Variazioni</h3>
                         </div>
 
-                        {/* List Items (Solo Variazioni) */}
+                        {/* List Items (Solo Variazioni Pagate) */}
                         <div className="space-y-2">
                             {spreadDiff !== 0 && (
                                 <div className="flex justify-between text-sm text-slate-600">
@@ -423,7 +473,7 @@
                                 </div>
                             )}
 
-                            {extras.map(({item, quantity}) => (
+                            {paidExtras.map(({item, quantity}) => (
                                 <div key={item.id} className="flex justify-between text-sm">
                                     <span className="text-slate-600">{quantity > 1 ? `${quantity}x ` : ''}{item.name}</span>
                                     <span className="font-medium">€{(item.cost * quantity * PRICE_MULTIPLIER).toFixed(2)}</span>
@@ -431,7 +481,7 @@
                             ))}
 
                             {totalVariationsPriceClient === 0 && (
-                                <div className="text-sm text-slate-400 italic text-center py-2">Nessuna variazione.</div>
+                                <div className="text-sm text-slate-400 italic text-center py-2">Nessuna variazione di prezzo.</div>
                             )}
                         </div>
 
@@ -485,17 +535,38 @@
                 miniCount: INCLUDED_MINIS,
                 selectedMiniCoverId: MINI_COVER_OPTIONS[0].id,
                 selectedMiniSpineId: MINI_SPINE_OPTIONS[0].id,
-                extras: {}
+                extras: {},
+                includedExtraIds: [] // Array di ID degli extra marcati come "Inclusi"
             };
 
             const [state, setState] = useState(INITIAL_STATE);
+            
+            // Stato temporaneo Setup Contratto
             const [tempContract, setTempContract] = useState({
                 clientName: '',
-                agreedPrice: 0,
+                agreedPrice: 370, // Default base price logic
                 albumId: ALBUMS[0].id,
                 includedSpreads: STANDARD_SPREADS,
-                includedMinis: INCLUDED_MINIS
+                includedMinis: INCLUDED_MINIS,
+                // contractExtrasCost rimosso
             });
+
+            // Logic to Auto-Calculate Contract Price based on inputs
+            useEffect(() => {
+                const selectedAlbum = ALBUMS.find(a => a.id === tempContract.albumId);
+                const albumBaseCost = selectedAlbum ? selectedAlbum.cost : 0;
+                
+                // Logic: 370 standard includes 2 minis. 
+                // If user changes minis, price adjusts by EXTRA_MINI_BASE_COST (50)
+                const miniDifference = tempContract.includedMinis - INCLUDED_MINIS; // e.g. 0 - 2 = -2
+                const miniAdjustment = miniDifference * EXTRA_MINI_BASE_COST; // -2 * 50 = -100
+                
+                const calculatedPrice = albumBaseCost + miniAdjustment;
+
+                // Update only the price
+                setTempContract(prev => ({ ...prev, agreedPrice: calculatedPrice }));
+            }, [tempContract.albumId, tempContract.includedMinis]);
+
 
             // Derived Data
             const activeAlbumId = state.contract ? state.contract.albumId : tempContract.albumId;
@@ -546,12 +617,24 @@
                     setState(INITIAL_STATE);
                     setTempContract({
                         clientName: '',
-                        agreedPrice: 0,
+                        agreedPrice: 370,
                         albumId: ALBUMS[0].id,
                         includedSpreads: STANDARD_SPREADS,
                         includedMinis: INCLUDED_MINIS
                     });
                 }
+            };
+
+            const toggleExtraIncluded = (extraId, isIncluded) => {
+                setState(prev => {
+                    const currentIncluded = new Set(prev.includedExtraIds);
+                    if (isIncluded) {
+                        currentIncluded.add(extraId);
+                    } else {
+                        currentIncluded.delete(extraId);
+                    }
+                    return { ...prev, includedExtraIds: Array.from(currentIncluded) };
+                });
             };
 
             // RENDER SETUP SCREEN
@@ -596,13 +679,15 @@
                                     </div>
                                 </div>
 
-                                <div className="pt-2">
-                                    <label className="block text-sm font-bold text-slate-800 mb-1">Prezzo Concordato (Base)</label>
+                                {/* Removed Extra da Contratto Input Field */}
+
+                                <div className="pt-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <label className="block text-sm font-bold text-slate-800 mb-1">Prezzo Concordato (Calcolato)</label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-2 text-slate-400">€</span>
-                                        <input type="number" className="w-full pl-8 pr-4 py-2 border-2 border-indigo-100 rounded-lg focus:border-indigo-500 focus:ring-0 outline-none font-bold text-lg text-slate-900" placeholder="0.00" value={tempContract.agreedPrice || ''} onChange={e => setTempContract({...tempContract, agreedPrice: Number(e.target.value)})} />
+                                        <input type="number" className="w-full pl-8 pr-4 py-2 border-2 border-indigo-100 rounded-lg focus:border-indigo-500 focus:ring-0 outline-none font-bold text-lg text-slate-900 bg-white" placeholder="0.00" value={tempContract.agreedPrice || ''} onChange={e => setTempContract({...tempContract, agreedPrice: Number(e.target.value)})} />
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-1">Prezzo totale concordato per il pacchetto base.</p>
+                                    <p className="text-xs text-slate-500 mt-1">Include {tempContract.includedMinis} Mini</p>
                                 </div>
 
                                 <button onClick={handleStartConfiguration} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-indigo-200 mt-4 flex justify-center items-center gap-2">
@@ -762,6 +847,9 @@
                                                 onSelect={() => !extra.allowQuantity && setState(p => ({...p, extras: {...p.extras, [extra.id]: p.extras[extra.id] ? 0 : 1}}))}
                                                 quantity={extra.allowQuantity ? (state.extras[extra.id] || 0) : undefined}
                                                 onQuantityChange={(q) => setState(p => ({...p, extras: {...p.extras, [extra.id]: q}}))}
+                                                // Nuove props per "Incluso nel contratto"
+                                                isIncluded={state.includedExtraIds.includes(extra.id)}
+                                                onToggleIncluded={(checked) => toggleExtraIncluded(extra.id, checked)}
                                             />
                                         ))}
                                     </div>
@@ -772,14 +860,15 @@
                                 <Summary 
                                     contract={state.contract} album={selectedAlbum} spreadCount={state.spreadCount}
                                     cover={selectedCover} spine={selectedSpine} box={selectedBox}
-                                    extras={selectedExtrasList} miniCount={state.miniCount}
+                                    extras={selectedExtrasList} includedExtraIds={state.includedExtraIds}
+                                    miniCount={state.miniCount}
                                     miniCover={selectedMiniCover} miniSpine={selectedMiniSpine} onReset={handleReset}
                                 />
                             </div>
                         </div>
                     </main>
                     <footer className="bg-white border-t border-slate-200 mt-auto py-6 text-center no-print">
-                        <p className="text-slate-400 font-medium text-sm">Developer with ❤️ by Angelo</p>
+                        <p className="text-slate-400 font-medium text-sm">Developed with ❤️ by Angelo</p>
                     </footer>
                 </div>
             );
